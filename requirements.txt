@@ -1,4 +1,4 @@
-mavsdk 
+mavsdk==2.*
 opencv-python 
 pillow 
 imagehash 

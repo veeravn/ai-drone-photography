@@ -32,3 +32,11 @@ poi:
   lat: null
   lon: null
   alt: null
+
+agent:
+  dup_streak_threshold: 3      # if we get N duplicates in a row, force a bigger move
+  low_sharpness_threshold: 80  # if last kept sharpness below this, retake or adjust
+  alt_step_m: 1.5              # altitude bump per “raise altitude” action
+  max_alt_m: 25.0              # cap altitude
+  radius_scale: 1.35           # multiply candidate radii when stuck
+  retake_pitch_delta_deg: -4.0 # tweak gimbal pitch for a retake
