@@ -1,0 +1,9 @@
+mavsdk 
+opencv-python 
+pillow 
+imagehash 
+numpy 
+pandas 
+scipy 
+matplotlib
+pyyaml
