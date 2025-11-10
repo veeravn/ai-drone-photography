@@ -1,4 +1,5 @@
 # scripts/run_agent.py
+import argparse
 import os
 import sys
 import time
@@ -78,7 +79,7 @@ def current_pose_stub() -> Tuple[float, float, float]:
     return (0.0, 0.0, 0.0)
 
 
-async def run(config_path: str = os.path.join(ROOT, "configs", "config.yaml")) -> None:
+async def run(config_path: str = os.path.join(ROOT, "config.yaml")) -> None:
     with open(config_path, "r") as f:
         cfg = yaml.safe_load(f)
 
@@ -168,7 +169,7 @@ async def run(config_path: str = os.path.join(ROOT, "configs", "config.yaml")) -
             )
             # Append to CSV (kept + not kept) so we have full audit
             # (If you prefer to log only kept, gate this call.)
-            from ai_photographer.dedupe import append_csv as append_csv_shot
+            from ai_photographer.dedupe import append_shotmeta_csv as append_csv_shot
             append_csv_shot(cfg["log_csv"], shot)
 
             # Only index kept shots for spatial dedupe
@@ -203,4 +204,11 @@ async def run(config_path: str = os.path.join(ROOT, "configs", "config.yaml")) -
 
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    # default to the repo root config.yaml (scripts/ is one level below repo root)
+    import asyncio
+    from pathlib import Path
+    ROOT = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(description="Run NBV Agent")
+    parser.add_argument("--config", "-c", default=str(ROOT / "config.yaml"), help="path to config yaml")
+    args = parser.parse_args()
+    asyncio.run(run(args.config))

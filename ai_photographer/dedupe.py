@@ -67,10 +67,42 @@ class ShotDB:
 
 
 # ---------- Image metrics ----------
-def compute_phash(image_path: str, phash_size: int = 16) -> imagehash.ImageHash:
-    img = Image.open(image_path).convert("L").resize((256, 256))
-    return imagehash.phash(img, hash_size=phash_size)
+def compute_phash(image_path: str, phash_size: int = 16, highfreq_factor: int = 4) -> imagehash.ImageHash:
+    """
+    Compute a perceptual hash for image_path.
 
+    Notes:
+    - imagehash.phash performs a DCT on a square region whose size is related to
+      (hash_size * highfreq_factor). To support larger hash_size values, ensure
+      the image is resized to a sufficiently large square before hashing.
+    - We choose a conservative target size = max(256, hash_size * highfreq_factor * 4)
+      to preserve frequency content for larger hashes.
+    - If the requested phash_size is invalid, raise ValueError.
+    """
+    if phash_size < 1:
+        raise ValueError("phash_size must be >= 1")
+
+    required_dim = phash_size * highfreq_factor
+    # padding factor to ensure ample frequency content; keep a reasonable minimum
+    target = max(256, required_dim * 4)
+
+    img = Image.open(image_path).convert("L")
+    w, h = img.size
+
+    # Make the image a square large enough for DCT processing.
+    if w != h:
+        # center-crop to square of the smaller side first
+        side = min(w, h)
+        left = (w - side) // 2
+        top = (h - side) // 2
+        img = img.crop((left, top, left + side, top + side))
+
+    # Resize to the target size (upscale or downscale) using a good resample filter
+    if img.size[0] != target:
+        img = img.resize((target, target), resample=Image.BICUBIC)
+
+    # Delegate to imagehash.phash with the requested parameters
+    return imagehash.phash(img, hash_size=phash_size, highfreq_factor=highfreq_factor)
 
 def compute_sharpness(image_path: str) -> float:
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -118,7 +150,7 @@ def decide_duplicate(
 
 
 # ---------- CSV logging ----------
-def append_csv(csv_path: str, shot: ShotMeta):
+def append_shotmeta_csv(csv_path: str, shot: ShotMeta):
     """Append a ShotMeta record to CSV."""
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
     new_file = not os.path.exists(csv_path)

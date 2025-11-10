@@ -3,7 +3,7 @@
 Minimal non-agent demo: connect → takeoff → capture N frames → land.
 
 Usage:
-  python scripts/fly_and_shoot.py --shots 5 --config configs/config.yaml
+  python scripts/fly_and_shoot.py --shots 5 --config config.yaml
 """
 import os
 import sys
@@ -58,7 +58,7 @@ async def land_and_close(drone):
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--shots", type=int, default=5, help="number of photos to capture")
-    ap.add_argument("--config", type=str, default=os.path.join(ROOT, "configs", "config.yaml"))
+    ap.add_argument("--config", type=str, default=os.path.join(ROOT, "config.yaml"))
     args = ap.parse_args()
 
     with open(args.config, "r") as f:
